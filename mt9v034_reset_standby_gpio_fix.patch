@@ -1,0 +1,13 @@
+diff --git a/linux-3.4/drivers/media/video/sunxi-vfe/vfe.c b/linux-3.4/drivers/media/video/sunxi-vfe/vfe.c
+index ae0b194..8278bc5 100755
+--- a/linux-3.4/drivers/media/video/sunxi-vfe/vfe.c
++++ b/linux-3.4/drivers/media/video/sunxi-vfe/vfe.c
+@@ -4302,7 +4302,7 @@ void vfe_fix_mux()
+ 	unsigned int addr = 0x01c20894;
+ 	unsigned int size = 0x4;
+ 	unsigned int value = 0;
+-	unsigned int fix = 0xff33ffff;
++	unsigned int fix = 0x0033ffff;
+ 	unsigned int fix1 = 0x0;//0x07000000;
+ 	//return;
+ 	
