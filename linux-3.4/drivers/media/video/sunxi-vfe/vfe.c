@@ -29,6 +29,8 @@
 #include <media/v4l2-mediabus.h>
 #include <media/v4l2-subdev.h>
 #include <media/videobuf-dma-contig.h>
+//Included for v4l2_ctrls structure for modifying any register address
+#include <media/v4l2-ctrls.h>
 
 #include <linux/regulator/consumer.h>
 #include <linux/ktime.h>
@@ -523,7 +525,7 @@ static int isp_resource_request(struct vfe_dev *dev)
 				dev->isp_tbl_addr[i].isp_gamma_tbl_paddr = (void*)(pa_base + ISP_GAMMA_MEM_OFS);
 				dev->isp_tbl_addr[i].isp_gamma_tbl_dma_addr = (void*)(dma_base + ISP_GAMMA_MEM_OFS);
 				dev->isp_tbl_addr[i].isp_gamma_tbl_vaddr = (void*)(va_base + ISP_GAMMA_MEM_OFS);
-				
+
 				dev->isp_tbl_addr[i].isp_linear_tbl_paddr = (void*)(pa_base + ISP_LINEAR_MEM_OFS);
 				dev->isp_tbl_addr[i].isp_linear_tbl_dma_addr = (void*)(dma_base + ISP_LINEAR_MEM_OFS);
 				dev->isp_tbl_addr[i].isp_linear_tbl_vaddr = (void*)(va_base + ISP_LINEAR_MEM_OFS);
@@ -547,7 +549,7 @@ static int isp_resource_request(struct vfe_dev *dev)
 				dev->isp_tbl_addr[i].isp_drc_tbl_paddr = (void*)(pa_base + ISP_DRC_MEM_OFS);
 				dev->isp_tbl_addr[i].isp_drc_tbl_dma_addr = (void*)(dma_base + ISP_DRC_MEM_OFS);
 				dev->isp_tbl_addr[i].isp_drc_tbl_vaddr = (void*)(va_base + ISP_DRC_MEM_OFS);
-				
+
 				dev->isp_tbl_addr[i].isp_disc_tbl_paddr = (void*)(pa_base + ISP_DISC_MEM_OFS);
 				dev->isp_tbl_addr[i].isp_disc_tbl_dma_addr = (void*)(dma_base + ISP_DISC_MEM_OFS);
 				dev->isp_tbl_addr[i].isp_disc_tbl_vaddr = (void*)(va_base + ISP_DISC_MEM_OFS);
@@ -914,7 +916,7 @@ static void update_isp_setting(struct vfe_dev *dev)
 	if (dev->input < 0) {
 		vfe_err("dev->input(%d) < 0 line=%d\n", dev->input, __LINE__);
 		return;
-	}	
+	}
 	dev->isp_3a_result_pt = &dev->isp_3a_result[dev->input];
 	dev->isp_gen_set_pt = &dev->isp_gen_set[dev->input];
 	dev->isp_gen_set_pt->module_cfg.isp_platform_id = dev->platform_id;
@@ -952,7 +954,7 @@ static inline void vfe_set_addr(struct vfe_dev *dev,struct vfe_buffer *buffer)
 	struct videobuf_buffer *vb_buf = &buf->vb;
 	struct videobuf_queue *vq = &dev->vb_vidq;
 	void * vaddr;
-	
+
 	if(vb_buf == NULL || vb_buf->priv == NULL)
 	{
 		vfe_err("videobuf_buffer->priv is NULL! vb%d vgp%d\n", vb_buf, vb_buf->priv);
@@ -1101,7 +1103,7 @@ static void vfe_dump_isp_log(struct vfe_dev *dev)
 		{
 			vfe_err("dump awb log faild.");
 		}
-		
+
 		//if(cfg_write_file(fp_dbg, dev->isp_gen_set_pt->stat.af_buf, ISP_STAT_AF_MEM_SIZE) < 0)
 		//{
 		//	vfe_err("dump isp log faild.");
@@ -1416,9 +1418,9 @@ static irqreturn_t vfe_isr(int irq, void *priv)
 	struct csi_int_status status;
 	struct vfe_isp_stat_buf_queue *isp_stat_bq = &dev->isp_stat_bq;
 	struct vfe_isp_stat_buf *stat_buf_pt;
-#ifdef CONFIG_ARCH_SUN8IW8P1		
+#ifdef CONFIG_ARCH_SUN8IW8P1
 	struct timespec timestamp;
-#endif		
+#endif
 
 	FUNCTION_LOG;
 	//vfe_dbg(0,"vfe interrupt!!!\n");
@@ -1532,11 +1534,11 @@ isp_exp_handle:
 		}
 		list_del(&buf->vb.queue);
 		do_gettimeofday(&buf->vb.ts);
-#ifdef CONFIG_ARCH_SUN8IW8P1		
+#ifdef CONFIG_ARCH_SUN8IW8P1
                ktime_get_ts(&timestamp);
                buf->vb.ts.tv_sec = timestamp.tv_sec;
                buf->vb.ts.tv_usec = timestamp.tv_nsec / 1000;
-#endif		
+#endif
 		buf->vb.field_count++;
 		//if(frame_cnt%150 == 0){
 		//	printk("video buffer fps = %ld\n",100000000/(buf->vb.ts.tv_sec*1000000+buf->vb.ts.tv_usec - (dev->sec*1000000+dev->usec)));
@@ -1793,8 +1795,6 @@ static int vidioc_enum_fmt_vid_cap(struct file *file, void  *priv,
 {
 	struct vfe_fmt *fmt;
 
-	vfe_dbg(0,"vidioc_enum_fmt_vid_cap\n");
-
 	if (f->index > ARRAY_SIZE(formats)-1) {
 		return -EINVAL;
 	}
@@ -1812,8 +1812,6 @@ static int vidioc_enum_framesizes(struct file *file, void *fh,
           struct v4l2_frmsizeenum *fsize)
 {
 	struct vfe_dev *dev = video_drvdata(file);
-
-	// vfe_dbg(0, "vidioc_enum_framesizes\n");
 
 	if (dev == NULL || dev->sd->ops->video->enum_framesizes==NULL) {
 		return -EINVAL;
@@ -2116,8 +2114,6 @@ static int vidioc_try_fmt_vid_cap(struct file *file, void *priv,
 	//  struct vfe_fmt *vfe_fmt;
 	//  struct v4l2_mbus_framefmt ccm_fmt;
 	enum v4l2_mbus_pixelcode *bus_pix_code;
-
-	vfe_dbg(0,"vidioc_try_fmt_vid_cap\n");
 
 	bus_pix_code = try_fmt_internal(dev,f);
 	if(!bus_pix_code) {
@@ -2464,13 +2460,13 @@ static int vidioc_s_fmt_vid_cap(struct file *file, void *priv,
 		isp_size[ROT_CH].width = 0;
 		isp_fmt[ROT_CH] = PIX_FMT_NONE;
 	}
-	
+
 	if(f->fmt.pix.subchannel != NULL)	{
 		dev->isp_gen_set_pt->double_ch_flag = 1;
 	} else {
 		dev->isp_gen_set_pt->double_ch_flag = 0;
 	}
-  
+
 	//dev->buf_byte_size = bsp_isp_set_size(isp_fmt,&ob_black_size, &ob_valid_size, &isp_size[MAIN_CH],&isp_size[ROT_CH],&ob_start,&isp_size[SUB_CH]);
 	size_settings.full_size = isp_size[MAIN_CH];
 	size_settings.scale_size = isp_size[SUB_CH];
@@ -2537,7 +2533,7 @@ static int vidioc_s_fmt_vid_cap(struct file *file, void *priv,
 			{
 				if(isp_fmt[SUB_CH] >= PIX_FMT_SBGGR_8&& isp_fmt[SUB_CH] <= PIX_FMT_SRGGB_12)
 				{
-					//after crop		
+					//after crop
 					vfe_reg_clr_set(IO_ADDRESS(ISP_REGS_BASE+0x10), (0xF << 16), (1 << 16));
 					vfe_reg_set(IO_ADDRESS(ISP_REGS_BASE+0x10), (1 << 20));
 					dev->isp_gen_set_pt->sensor_mod = VIDEO_MODE;
@@ -2564,7 +2560,7 @@ static int vidioc_reqbufs(struct file *file, void *priv,
 {
 	struct vfe_dev *dev = video_drvdata(file);
 
-	vfe_dbg(0,"vidioc_reqbufs\n");
+	vfe_dbg(0,"[n]vidioc_reqbufs\n");
 
 	return videobuf_reqbufs(&dev->vb_vidq, p);
 }
@@ -2587,7 +2583,7 @@ static int vidioc_dqbuf(struct file *file, void *priv, struct v4l2_buffer *p)
 {
 	int ret = 0;
 	struct vfe_dev *dev = video_drvdata(file);
-	vfe_dbg(2,"vidioc dqbuf\n");
+	vfe_dbg(2,"[n]vidioc dqbuf\n");
 	ret = videobuf_dqbuf(&dev->vb_vidq, p, file->f_flags & O_NONBLOCK);
 	//if (dev->isp_3a_result_pt != NULL && dev->is_bayer_raw)
 	//{
@@ -2729,7 +2725,7 @@ static int vidioc_streamoff(struct file *file, void *priv, enum v4l2_buf_type i)
   int ret = 0;
 
   mutex_lock(&dev->stream_lock);
-  vfe_dbg(0,"video stream off\n");
+  vfe_dbg(0,"[n]video stream off\n");
   if (!vfe_is_generating(dev)) {
     vfe_err("stream has been already off\n");
     ret = 0;
@@ -3062,10 +3058,17 @@ static int vidioc_queryctrl(struct file *file, void *priv,
 {
   struct vfe_dev *dev = video_drvdata(file);
   int ret;
-  if(dev->is_isp_used && dev->is_bayer_raw) {
+
+  /*
+   * This was stopping the exposure or for that matter any register writing.
+   */
+  //if(dev->is_isp_used && dev->is_bayer_raw) {
+  vfe_warn("v4l2 sub device queryctrl %s recieved !\n", v4l2_ctrl_get_name(qc->id));
+  {
     /* Fill in min, max, step and default value for these controls. */
     /* see include/linux/videodev2.h for details */
     /* see sensor_s_parm and sensor_g_parm for the meaning of value */
+    vfe_warn("v4l2 sub device queryctrl %s going ahead !\n", v4l2_ctrl_get_name(qc->id));
     switch (qc->id) {
       //V4L2_CID_BASE
       case V4L2_CID_BRIGHTNESS:
@@ -3220,9 +3223,12 @@ static int vidioc_g_ctrl(struct file *file, void *priv,
   int ret;
   unsigned int i;
   qc.id = ctrl->id;
+  vfe_warn("v4l2 sub device  vidioc_g_ctrl \n");
   ret = vidioc_queryctrl(file, priv, &qc);
+  vfe_warn("v4l2 sub device  vidioc_g_ctrl ret %d \n", ret);
   if (ret < 0)
   {
+    vfe_warn("v4l2 sub device  vidioc_g_ctrl ret error \n");
     return ret;
   }
 
@@ -3326,8 +3332,8 @@ static int vidioc_g_ctrl(struct file *file, void *priv,
         ctrl->value = dev->ctrl_para.exp_auto_pri;
         break;
       case V4L2_CID_FOCUS_ABSOLUTE:
-        ctrl->value = CLIP(((dev->isp_3a_result_pt->real_vcm_pos - dev->isp_gen_set_pt->stat.vcm_cfg.vcm_min_code ) << 10) / 
-        			(dev->isp_gen_set_pt->stat.vcm_cfg.vcm_max_code - 
+        ctrl->value = CLIP(((dev->isp_3a_result_pt->real_vcm_pos - dev->isp_gen_set_pt->stat.vcm_cfg.vcm_min_code ) << 10) /
+        			(dev->isp_gen_set_pt->stat.vcm_cfg.vcm_max_code -
         			dev->isp_gen_set_pt->stat.vcm_cfg.vcm_min_code ), 0, 1023);
         break;
       case V4L2_CID_FOCUS_RELATIVE:
@@ -3466,7 +3472,9 @@ static int vidioc_g_ctrl(struct file *file, void *priv,
   	}
   	else
   	{
+                vfe_warn("v4l2 sub device g_ctrl calling v4l2_subdev_call !\n");
 		ret = v4l2_subdev_call(dev->sd,core,g_ctrl,ctrl);
+                vfe_warn("v4l2 sub device g_ctrl calling v4l2_subdev_call ret = %d !\n", ret);
 		if (ret < 0)
 			vfe_warn("v4l2 sub device g_ctrl error!\n");
   	}
@@ -3487,7 +3495,8 @@ static int vidioc_s_ctrl(struct file *file, void *priv,
   qc.id = ctrl->id;
   ret = vidioc_queryctrl(file, priv, &qc);
 
-  //printk("vidioc_queryctrl!\n ret = %d",ret);
+  printk("vidioc_queryctrl! ret = %d id = %d val = %d \n",ret, ctrl->id, ctrl->value);
+
   if (ret < 0)
     return ret;
 
@@ -3852,11 +3861,28 @@ static int vidioc_s_ctrl(struct file *file, void *priv,
       //TO DO !
       vcm_ctrl.code = ctrl->value;
       vcm_ctrl.sr = 0x0;
-      //printk("ACT_SET_CODE start code = %d!\n",vcm_ctrl.code);
+      printk("ACT_SET_CODE start code = %d!\n",vcm_ctrl.code);
         v4l2_subdev_call(dev->sd_act,core,ioctl,ACT_SET_CODE,&vcm_ctrl);
     }
 
-    ret = v4l2_subdev_call(dev->sd,core,s_ctrl,ctrl);
+    /*
+     * Correct mismatching structure. The structure passed earlier was
+     * used after typecasting and all values in the structure were destroyed.
+     * Using proper structure here.
+     */
+    vfe_warn("v4l2_subdev_call calling ! ctl id : %d val : %d  reg: %p \n", ctrl->id, ctrl->value, ctrl->user_pt);
+    vfe_warn("v4l2_subdev_call  changing the values \n");
+    struct v4l2_ctrl new_ctrl;
+    new_ctrl.handler = dev->sd;
+    new_ctrl.val = ctrl->value;
+    new_ctrl.id = ctrl->id;
+    /*
+     * Changes to modify any register data.
+     * In mt9v driver ID for any register read write should be V4L2_CID_GAIN
+     */
+    new_ctrl.reg = (u8)ctrl->user_pt;
+    ret = v4l2_subdev_call(dev->sd,core,s_ctrl,&new_ctrl);
+    vfe_warn("v4l2_subdev_call calling ! ret = \n", ret);
     if (ret < 0)
     {
       vfe_warn("v4l2 sub device s_ctrl fail!\n");
@@ -4305,7 +4331,7 @@ void vfe_fix_mux()
 	unsigned int fix = 0x0033ffff;
 	unsigned int fix1 = 0x0;//0x07000000;
 	//return;
-	
+
 	if(!request_mem_region(addr, size, "fix_mux_vfe")) {
 		printk("vfe_fix_mux error request_mem_region\n");
 		return;
@@ -4887,7 +4913,7 @@ static int vfe_sensor_check(struct vfe_dev *dev)
 	struct v4l2_subdev *sd = dev->sd;
 	vfe_print("Check sensor!\n");
 	printk("vfe_sensor_check 0\n");
-#ifdef CONFIG_ARCH_SUN8IW8P1	
+#ifdef CONFIG_ARCH_SUN8IW8P1
 	return 0;
 #endif
 	vfe_set_sensor_power_on(dev);
@@ -5532,7 +5558,7 @@ static int vfe_probe(struct platform_device *pdev)
 		ret = bsp_mipi_csi_set_base_addr(dev->mipi_sel, 0);
 		if(ret < 0)
 			goto free_resource;
-		ret = bsp_mipi_dphy_set_base_addr(dev->mipi_sel, 0);    
+		ret = bsp_mipi_dphy_set_base_addr(dev->mipi_sel, 0);
 		if(ret < 0)
 			goto free_resource;
 #endif
@@ -6028,5 +6054,3 @@ module_exit(vfe_exit);
 MODULE_AUTHOR("raymonxiu");
 MODULE_LICENSE("Dual BSD/GPL");
 MODULE_DESCRIPTION("Video front end driver for sunxi");
-
-

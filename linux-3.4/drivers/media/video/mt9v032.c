@@ -146,9 +146,6 @@
 #define HREF_POL          V4L2_MBUS_HSYNC_ACTIVE_HIGH
 #define CLK_POL           V4L2_MBUS_PCLK_SAMPLE_RISING
 
-//struct vfe_dev *my_dev;
-//struct pinctrl *my_pctrl;
-//struct pinctrl *my_pctrl_0;
 
 static int called=0;
 bool asj = 0;
@@ -161,12 +158,8 @@ struct mt9v032 {
 	struct v4l2_rect crop;
 
 	struct v4l2_ctrl_handler ctrls;
-
 	struct mutex power_lock;
 	int power_count;
-	
-	//struct device *dev;
-	//struct pinctrl *pctrl;
 
 	//ankt
 	struct clk *clk;
@@ -199,43 +192,20 @@ short val = 0x0000;
 int procfile_read(char *buffer, char **buffer_location, off_t offset, int buffer_length, int *eof, void *data)
 {
 	int ret ;
-	//int func = 3;
-	//long unsigned int config_set;
-	//char * dev_name = "mt9v032";
-	//char * port_name_c = "PE12";
-	//char * port_name_d = "PE13";
-	//char *name = "twi2";
+
 	//struct pinctrl *my_p = NULL;
 	//devm_pinctrl_put(&client->adapter->dev.parent->pinctrl);
 	//printk("\r\nmt9v032 dev name: %s\r\n",my_client->adapter->dev.kobj.name);
 	//dev_set_name(&my_client->adapter->dev, "twi2");
 	//printk("\r\nmt9v032 dev name: %s\r\n",my_client->adapter->dev.kobj.name);
 
-	//my_p = devm_pinctrl_get_select(&my_client->adapter->dev, "default");
-	//if (IS_ERR_OR_NULL(my_p)) {
-	//	printk("mt9v032 request pinctrl handle for devicefailed!\n");
-	//}
-	//
-	//
-      	//config_set = SUNXI_PINCFG_PACK(SUNXI_PINCFG_TYPE_FUNC,func);
-        //pin_config_set(dev_name,port_name_c,config_set);
-        //pin_config_set(dev_name,port_name_d,config_set);
-
 	//devm_pinctrl_put(my_pctrl_0);
 	//dev_set_name(&my_dev->pdev->dev,"twi2");
 	//dev_set_name(&dev->pdev->dev,"csi%d",dev->id);
-	//my_pctrl = devm_pinctrl_get_select(&my_dev->pdev->dev, "default");
-	//if (IS_ERR_OR_NULL(twi_pctrl)) {
-	//	printk("mt9v032 vip%d request pinctrl for device [%s] failed!\n", dev->id, dev_name(&my_dev->pdev->dev));
-		//return -EINVAL;
-	//}
 
 	s32 data1 = mt9v032_read(my_client, MT9V032_CHIP_VERSION);
 	data1 = mt9v032_read(my_client, MT9V032_PIXEL_OPERATION_MODE);
-	//if(val == 0x0)
-	//	val = 0x0100;
-	//else
-	//	val = 0;
+
 	ret = mt9v032_write(my_client, MT9V032_PIXEL_OPERATION_MODE, 0);
 	data1 = mt9v032_read(my_client, MT9V032_PIXEL_OPERATION_MODE);
 
@@ -246,16 +216,6 @@ int procfile_read(char *buffer, char **buffer_location, off_t offset, int buffer
 	data1 = mt9v032_read(my_client, 0x47);
 	data1 = mt9v032_read(my_client, 0x48);
 */
-
-	//vfe_muxto_i2c();
-	//mt9v032_registered(NULL);
-	//devm_pinctrl_put(my_pctrl);
-	//dev_set_name(&dev->pdev->dev,"csi%d",dev->id);
-	//my_dev->pctrl = devm_pinctrl_get_select(&dev->pdev->dev, "default");
-	//if (IS_ERR_OR_NULL(twi_pctrl)) {
-	//	printk("mt9v032 vip%d request pinctrl for device [%s] failed!\n", dev->id, dev_name(&my_dev->pdev->dev));
-		//return -EINVAL;
-	//}
 
 	return ret;
 }
@@ -295,10 +255,6 @@ static struct mt9v032 *to_mt9v032(struct v4l2_subdev *sd)
 static int mt9v032_read(struct i2c_client *client, const u8 reg)
 {
 
-	//if(!called) {
-	//	called = 1;
-	//	vfe_muxto_i2c();
-	//}
 	s32 data = i2c_smbus_read_word_swapped(client, reg);
 	//vfe_muxto_csi();
 	dev_dbg(&client->dev, "%s: read 0x%04x from 0x%02x\n", __func__,
@@ -321,16 +277,24 @@ static int mt9v032_write(struct i2c_client *client, const u8 reg,
 		data, reg);
 	printk("%s: writing 0x%04x to 0x%02x\n", __func__,
 		data, reg);
-	//return i2c_smbus_write_word_swapped(client, reg, data);
-	//vfe_muxto_i2c();
+
 	ret = i2c_smbus_write_word_swapped(client, reg, data);
+
+  //Testing Verify written data
+	//printk("[n] after write read data ret: %d  \n", ret);
+	//mt9v032_read(client, reg);
 	//vfe_muxto_csi();
 	return ret;
 }
 
 static int mt9v032_set_chip_control(struct mt9v032 *mt9v032, u16 clear, u16 set)
 {
+
 	struct i2c_client *client = v4l2_get_subdevdata(&mt9v032->subdev);
+	my_client = client;
+
+	printk("[n] mt9v032_set_chip_control mt9v032: %p client: %p \n",mt9v032, client);
+
 	u16 value = (mt9v032->chip_control & ~clear) | set;
 	int ret;
 #if 1
@@ -369,6 +333,7 @@ static int mt9v032_power_on(struct mt9v032 *mt9v032)
 	struct i2c_client *client = v4l2_get_subdevdata(&mt9v032->subdev);
 	int ret;
 
+  printk("[n] mt9v032_power_on mt9v032: %p  client: %p \n",mt9v032, client);
 	//ankt
 	//if (mt9v032->pdata->set_clock) {
 	//	mt9v032->pdata->set_clock(&mt9v032->subdev, 25000000);
@@ -376,14 +341,14 @@ static int mt9v032_power_on(struct mt9v032 *mt9v032)
 	//}
 	if(on_done == 1)
 		return 0;
-	
+
 	//clk_set_rate(mt9v032->clk, 26600000);
 	clk_prepare_enable(mt9v032->clk);
 	udelay(1);
 
 	//while(1) {
 	s32 data = mt9v032_read(client, MT9V032_CHIP_VERSION);
-	
+
 	//if(data == 1324)
 	//	break;
 	//msleep(100);
@@ -414,7 +379,7 @@ static int __mt9v032_set_power(struct mt9v032 *mt9v032, bool on)
 {
 	struct i2c_client *client = v4l2_get_subdevdata(&mt9v032->subdev);
 	int ret;
-	
+
 	//ankt
 	mt9v032->clk = devm_clk_get(&client->dev, NULL);
 	if (IS_ERR(mt9v032->clk))
@@ -673,26 +638,47 @@ static int _mt9v032_s_ctrl(struct v4l2_subdev *sd, struct v4l2_control *ctrl)
 {
 	return mt9v032_s_ctrl(ctrl);
 }
+/*
+ * This function will be used for all register writes.
+ * Since we need to have an API to write any register address we will use
+ * V4L2_CID_GAIN as ID which is used with user_ptr to modify any register
+ * address.
+ */
 static int mt9v032_s_ctrl(struct v4l2_ctrl *ctrl)
 {
+  printk("[n] mt9v032_s_ctrl id: %d val : %d \n",ctrl->id,ctrl->val);
 	struct mt9v032 *mt9v032 =
 			container_of(ctrl->handler, struct mt9v032, ctrls);
 	struct i2c_client *client = v4l2_get_subdevdata(&mt9v032->subdev);
+	/*
+	 * The client we get here is not the correct I2C client so using the
+	 * global client data saved at initialization.
+	 */
+
+	printk("overwriting client old client %p actual client %p \n", client, my_client);
+	client = my_client;
 	u16 data;
+
+	printk("[n] mt9v032_s_ctrl mt9v032: %p i2c client  : %p ctrl->handler %p \n",mt9v032, client, ctrl->handler);
+
 
 	switch (ctrl->id) {
 	case V4L2_CID_AUTOGAIN:
 		return mt9v032_update_aec_agc(mt9v032, MT9V032_AGC_ENABLE,
 					      ctrl->val);
 
+  //If this ID is recieved we will use user_ptr data to modify any register value.
 	case V4L2_CID_GAIN:
-		return mt9v032_write(client, MT9V032_ANALOG_GAIN, ctrl->val);
+    //printk("[n] mt9v032_s_ctrl V4L2_CID_GAIN Modify any register \n");
+		return mt9v032_write(client, ctrl->reg, ctrl->val);
 
 	case V4L2_CID_EXPOSURE_AUTO:
+    printk("[n] mt9v032_s_ctrl 4L2_CID_EXPOSURE_AUTO \n");
 		return mt9v032_update_aec_agc(mt9v032, MT9V032_AEC_ENABLE,
 					      ctrl->val);
 
 	case V4L2_CID_EXPOSURE:
+    printk("[n] mt9v032_s_ctrl V4L2_CID_EXPOSURE \n");
 		return mt9v032_write(client, MT9V032_TOTAL_SHUTTER_WIDTH,
 				     ctrl->val);
 
@@ -723,6 +709,7 @@ static int mt9v032_s_ctrl(struct v4l2_ctrl *ctrl)
 
 		return mt9v032_write(client, MT9V032_TEST_PATTERN, data);
 	default:
+               printk("[n] mt9v032_s_ctrl default not handles \n");
 		break;
 	}
 
@@ -755,7 +742,7 @@ static int mt9v032_set_power(struct v4l2_subdev *subdev, int on)
 {
 	struct mt9v032 *mt9v032 = to_mt9v032(subdev);
 	int ret = 0;
-	
+
 	printk("mt9v032_set_power %d\n", on);
 
 	if(on == CSI_SUBDEV_PWR_ON)
@@ -829,7 +816,7 @@ int mt9v032_registered(struct v4l2_subdev *subdev)
 
 	dev_info(&client->dev, "Probing MT9V032 at address 0x%02x\n",
 			client->addr);
-	
+
 	//ret =__mt9v032_set_power(mt9v032, 1);
 	//if (ret < 0)
 	//	printk("\r\nmt9v032_probe 7\r\n");
@@ -842,7 +829,7 @@ int mt9v032_registered(struct v4l2_subdev *subdev)
 
 	/* Read and check the sensor version */
 	data = mt9v032_read(client, MT9V032_CHIP_VERSION);
-	if (data != MT9V032_CHIP_ID_REV1 && data != MT9V032_CHIP_ID_REV3 && 
+	if (data != MT9V032_CHIP_ID_REV1 && data != MT9V032_CHIP_ID_REV3 &&
 			data != MT9V034_CHIP_ID_REV1) {
 		dev_err(&client->dev, "MT9V032 not detected, wrong version "
 				"0x%04x\n", data);
@@ -871,6 +858,7 @@ static int mt9v032_open(struct v4l2_subdev *subdev, struct v4l2_subdev_fh *fh)
 
 	format = v4l2_subdev_get_try_format(fh, 0);
 	format->code = V4L2_MBUS_FMT_SGRBG10_1X10;
+	//format->code = V4L2_MBUS_FMT_Y10_1X10;
 	format->width = MT9V032_WINDOW_WIDTH_DEF;
 	format->height = MT9V032_WINDOW_HEIGHT_DEF;
 	format->field = V4L2_FIELD_NONE;
@@ -909,7 +897,7 @@ static int mt9v032_g_chip_ident(struct v4l2_subdev *sd,
 static int sensor_g_exif(struct v4l2_subdev *sd, struct sensor_exif_attribute *exif)
 {
 	int ret = 0;//, gain_val, exp_val;
-	
+
 	exif->fnumber = 220;
 	exif->focal_length = 180;
 	exif->brightness = 125;
@@ -938,7 +926,7 @@ static int mt9v032_g_mbus_config(struct v4l2_subdev *sd,
 {
   cfg->type = V4L2_MBUS_PARALLEL;
   cfg->flags = V4L2_MBUS_MASTER | VREF_POL | HREF_POL | CLK_POL ;
-  
+
   return 0;
 }
 static int mt9v032_s_parm(struct v4l2_subdev *sd, struct v4l2_streamparm *parms)
@@ -947,20 +935,20 @@ static int mt9v032_s_parm(struct v4l2_subdev *sd, struct v4l2_streamparm *parms)
   struct v4l2_fract *tpf = &cp->timeperframe;
   //struct sensor_info *info = to_state(sd);
   unsigned char div;
-  
+
   printk("sensor_s_parm\n");
-  
+
   if (parms->type != V4L2_BUF_TYPE_VIDEO_CAPTURE){
   	printk("parms->type!=V4L2_BUF_TYPE_VIDEO_CAPTURE\n");
     return -EINVAL;
   }
-  
+
   if (tpf->numerator == 0 || tpf->denominator == 0) {
     tpf->numerator = 1;
     tpf->denominator = 60;//30;/* Reset to full rate */
     printk("sensor frame rate reset to full rate!\n");
   }
-  
+
   div = 60/(tpf->denominator/tpf->numerator);
   //div = 30/(tpf->denominator/tpf->numerator);
   if(div > 15 || div == 0)
@@ -970,9 +958,9 @@ static int mt9v032_s_parm(struct v4l2_subdev *sd, struct v4l2_streamparm *parms)
   	printk("tpf->numerator=%d\n",tpf->numerator);
     return -EINVAL;
   }
-  
+
   printk("set frame rate %d\n",tpf->denominator/tpf->numerator);
-  
+
 	return 0;
 }
 
@@ -983,18 +971,18 @@ static int mt9v032_g_parm(struct v4l2_subdev *sd, struct v4l2_streamparm *parms)
 
 	if (parms->type != V4L2_BUF_TYPE_VIDEO_CAPTURE)
 		return -EINVAL;
-	
+
 	memset(cp, 0, sizeof(struct v4l2_captureparm));
 	cp->capability = V4L2_CAP_TIMEPERFRAME;
 	cp->capturemode = V4L2_MODE_VIDEO;
-	
+
 	cp->timeperframe.numerator = 1;//info->tpf.numerator;
 	cp->timeperframe.denominator = 60;//30;//info->tpf.denominator;
-	 
+
 	return 0;
 }
 
-static int mt9v032_s_fmt(struct v4l2_subdev *sd, struct v4l2_mbus_framefmt *fmt) 
+static int mt9v032_s_fmt(struct v4l2_subdev *sd, struct v4l2_mbus_framefmt *fmt)
 {
 	return 0;
 }
@@ -1002,9 +990,9 @@ static int mt9v032_enum_size(struct v4l2_subdev *sd, struct v4l2_frmsizeenum *fs
 {
   //if(fsize->index > N_WIN_SIZES-1)
   //	return -EINVAL;
-  
+
   fsize->type = V4L2_FRMSIZE_TYPE_DISCRETE;
-  fsize->discrete.width = 768;//sensor_win_sizes[fsize->index].width;
+  fsize->discrete.width = 752;//sensor_win_sizes[fsize->index].width;
   fsize->discrete.height = 480;//sensor_win_sizes[fsize->index].height;
   printk("%s %d width=%d height=%d\n", __func__, fsize->index,  fsize->discrete.width,  fsize->discrete.height);
   return 0;
@@ -1023,7 +1011,7 @@ static int mt9v032_try_fmt(struct v4l2_subdev *sd,
 		             struct v4l2_mbus_framefmt *fmt)
 {
 
-  fmt->width = 768;//wsize->width;
+  fmt->width = 752;//wsize->width;
   fmt->height = 480;//wsize->height;
   return 0;
 }
@@ -1085,10 +1073,10 @@ static int cci_sys_register(struct cci_driver *drv_data)
 	int i, ret;
 	drv_data->cci_device = my_cci_device_def;
 	dev_set_name(&drv_data->cci_device, drv_data->name);
-	
+
 	if (device_register(&drv_data->cci_device))
 		printk("error device_register()\n");
-	
+
 	dev_set_drvdata(&drv_data->cci_device,drv_data);
 #if 0
 	/* sysfs entries */
@@ -1244,18 +1232,18 @@ static int mt9v032_probe(struct i2c_client *client,
 	//ret =__mt9v032_set_power(mt9v032, 1);
 	//if (ret < 0)
 	//	printk("\r\nmt9v032_probe 7\r\n");
-	
+
 	//proc
 	/* create the /proc file */
 	Our_Proc_File = create_proc_entry(PROCFS_NAME, 0644, NULL);
-	
+
 	if (Our_Proc_File == NULL) {
 		remove_proc_entry(PROCFS_NAME, NULL);
 		printk(KERN_ALERT "mt9v032 Error: Could not initialize /proc/%s\n",
 		PROCFS_NAME);
 		//return -ENOMEM;
 	}
-	
+
 	Our_Proc_File->read_proc  = procfile_read;
 	Our_Proc_File->write_proc = procfile_write;
 	//Our_Proc_File->owner 	  = THIS_MODULE;
@@ -1276,7 +1264,7 @@ static int mt9v032_remove(struct i2c_client *client)
 {
 	struct v4l2_subdev *subdev = i2c_get_clientdata(client);
 	struct mt9v032 *mt9v032 = to_mt9v032(subdev);
-	
+
 	//ankt
 	//v4l2_async_unregister_subdev(subdev);
 	//v4l2_ctrl_handler_free(&mt9v032->ctrls);

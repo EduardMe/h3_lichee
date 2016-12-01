@@ -132,6 +132,9 @@ struct v4l2_ctrl {
 	};
 	const char * const *qmenu;
 	unsigned long flags;
+	//New structure item added to copy register address which is recieved as
+	//user ptr from v4l2 data structure
+	u8 reg;
 	union {
 		s32 val;
 		s64 val64;
