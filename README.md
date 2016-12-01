@@ -11,6 +11,7 @@ http://wiki.friendlyarm.com/wiki/index.php/NanoPi_M1
 - There was mismatch in structure in 
 - The `i2c` client data was not found properly by 
 - Image size was incorrect `768` in place of `752`
+- By default auto exposure and auto gain was enabled
 
 ### Problems
 
@@ -29,6 +30,7 @@ v4l2_subdev_call(dev->sd,core,s_ctrl,ctrl);
 - Made `I2C` client data global and populated this for `mt9v` as this will always be fixed. It is observed that it is static even on startup but anyhow after `mt9v` is initialized once `i2c` client is fixed
 - Used `V4L2_CID_GAIN` id in s_ctrl to write value on any resistor
 - To pass resistor address added one extra parameter in `v4l2_ctrl` structure
+- Disabled auto control of exposure and gain
 
 There is a mismatch in v4l2_control in videodev2.h lichee kernel and brandy tool chain
 
