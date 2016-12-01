@@ -3062,8 +3062,9 @@ static int vidioc_queryctrl(struct file *file, void *priv,
   /*
    * This was stopping the exposure or for that matter any register writing.
    */
-  //if(dev->is_isp_used && dev->is_bayer_raw) {
-  vfe_warn("v4l2 sub device queryctrl %s recieved !\n", v4l2_ctrl_get_name(qc->id));
+   vfe_warn("v4l2 sub device queryctrl %s recieved !\n", v4l2_ctrl_get_name(qc->id));
+  //if(dev->is_isp_used && dev->is_bayer_raw)
+  if(1==1)
   {
     /* Fill in min, max, step and default value for these controls. */
     /* see include/linux/videodev2.h for details */
