@@ -1171,7 +1171,8 @@ static int mt9v032_probe(struct i2c_client *client,
 	mt9v032->format.field = V4L2_FIELD_NONE;
 	mt9v032->format.colorspace = V4L2_COLORSPACE_SRGB;
 
-	mt9v032->aec_agc = MT9V032_AEC_ENABLE | MT9V032_AGC_ENABLE;
+  //We need to comment out below as we don't need auto control
+	//mt9v032->aec_agc = MT9V032_AEC_ENABLE | MT9V032_AGC_ENABLE;
 
 	ret = 0;
 #if 1
