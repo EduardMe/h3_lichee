@@ -420,6 +420,7 @@ static struct v4l2_mbus_framefmt *
 __mt9v032_get_pad_format(struct mt9v032 *mt9v032, struct v4l2_subdev_fh *fh,
 			 unsigned int pad, enum v4l2_subdev_format_whence which)
 {
+	printk("__mt9v032_get_pad_format which %d pad %d \n",which, pad);
 	switch (which) {
 	case V4L2_SUBDEV_FORMAT_TRY:
 		return v4l2_subdev_get_try_format(fh, pad);
@@ -434,8 +435,10 @@ static struct v4l2_rect *
 __mt9v032_get_pad_crop(struct mt9v032 *mt9v032, struct v4l2_subdev_fh *fh,
 		       unsigned int pad, enum v4l2_subdev_format_whence which)
 {
+	printk("__mt9v032_get_pad_crop which %d pad %d \n",which, pad);
 	switch (which) {
 	case V4L2_SUBDEV_FORMAT_TRY:
+	  printk("__mt9v032_get_pad_crop V4L2_SUBDEV_FORMAT_TRY\n");
 		return v4l2_subdev_get_try_crop(fh, pad);
 	case V4L2_SUBDEV_FORMAT_ACTIVE:
 		return &mt9v032->crop;
@@ -457,7 +460,10 @@ static int mt9v032_s_stream(struct v4l2_subdev *subdev, int enable)
 	unsigned int vratio;
 	int ret;
 
-	printk("mt9v Stream on\n");
+  if(crop)
+	printk("mt9v Stream on x: %d, y: %d, width: %d height: %d\n", crop->left, crop->top, crop->width, crop->height);
+	else
+	printk("mt9v stream on no crop %x \n", mt9v032 );
 
 	if (!enable)
 		return mt9v032_set_chip_control(mt9v032, mode, 0);
@@ -585,6 +591,7 @@ static int mt9v032_set_crop(struct v4l2_subdev *subdev,
 			    struct v4l2_subdev_fh *fh,
 			    struct v4l2_subdev_crop *crop)
 {
+	printk("mt9v set crop %d width\n", (crop->rect).width);
 	struct mt9v032 *mt9v032 = to_mt9v032(subdev);
 	struct v4l2_mbus_framefmt *__format;
 	struct v4l2_rect *__crop;
@@ -623,6 +630,30 @@ static int mt9v032_set_crop(struct v4l2_subdev *subdev,
 
 	*__crop = rect;
 	crop->rect = rect;
+
+
+	printk("Now cropping \n");
+	int ret = mt9v032_write(my_client, MT9V032_COLUMN_START, __crop->left);
+	if (ret < 0)
+		return ret;
+
+	ret = mt9v032_write(my_client, MT9V032_ROW_START, __crop->top);
+	if (ret < 0)
+		return ret;
+
+	ret = mt9v032_write(my_client, MT9V032_WINDOW_WIDTH, __crop->width);
+	if (ret < 0)
+		return ret;
+
+	ret = mt9v032_write(my_client, MT9V032_WINDOW_HEIGHT, __crop->height);
+	if (ret < 0)
+		return ret;
+
+	ret = mt9v032_write(my_client, MT9V032_HORIZONTAL_BLANKING,
+					max(43, 660 - __crop->width));
+	if (ret < 0)
+		return ret;
+
 
 	return 0;
 }

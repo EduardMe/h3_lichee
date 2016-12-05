@@ -2718,6 +2718,40 @@ streamon_unlock:
   return ret;
 }
 
+static int vidioc_s_crop(struct file *file, void *fh, struct v4l2_crop *a)
+{
+   printk("TODO put cropping here start %d y: %d width %d heighti %d crop type %d \n", (a->c).left, (a->c).top, (a->c).width, (a->c).height, a->type);
+
+   struct vfe_dev *dev = video_drvdata(file);
+
+   if (dev == NULL)
+         return -EINVAL;
+
+         /**
+          * struct v4l2_subdev_crop - Pad-level crop settings
+          * @which: format type (from enum v4l2_subdev_format_whence)
+          * @pad: pad number, as reported by the media API
+          * @rect: pad crop rectangle boundaries
+
+         struct v4l2_subdev_crop {
+         	__u32 which;
+         	__u32 pad;
+         	struct v4l2_rect rect;
+         	__u32 reserved[8];
+         };
+         */
+   struct v4l2_subdev_crop crop;
+   crop.which = V4L2_SUBDEV_FORMAT_ACTIVE;//V4L2_SUBDEV_FORMAT_ACTIVE no fuss then
+   crop.rect = a->c;
+   //__u32 which;
+ 	//__u32 pad;
+ 	//struct v4l2_rect rect;
+
+   int ret = v4l2_subdev_call(dev->sd, pad, set_crop, fh, &crop);
+   return ret;
+
+}
+
 static int vidioc_streamoff(struct file *file, void *priv, enum v4l2_buf_type i)
 {
   struct vfe_dev *dev = video_drvdata(file);
@@ -4260,6 +4294,7 @@ static const struct v4l2_ioctl_ops vfe_ioctl_ops = {
 	.vidioc_isp_af_stat_req   = isp_af_stat_req,
 	.vidioc_isp_gamma_req   = isp_gamma_req,
 	.vidioc_isp_exif_req   = isp_exif_req ,
+  .vidioc_s_crop         = vidioc_s_crop,
 };
 
 static struct video_device vfe_template[] =
