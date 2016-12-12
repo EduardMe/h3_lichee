@@ -3096,14 +3096,13 @@ static int vidioc_queryctrl(struct file *file, void *priv,
   /*
    * This was stopping the exposure or for that matter any register writing.
    */
-   vfe_warn("v4l2 sub device queryctrl %s recieved !\n", v4l2_ctrl_get_name(qc->id));
+   //vfe_warn("v4l2 sub device queryctrl %s recieved !\n", v4l2_ctrl_get_name(qc->id));
   //if(dev->is_isp_used && dev->is_bayer_raw)
   if(1==1)
   {
     /* Fill in min, max, step and default value for these controls. */
     /* see include/linux/videodev2.h for details */
     /* see sensor_s_parm and sensor_g_parm for the meaning of value */
-    vfe_warn("v4l2 sub device queryctrl %s going ahead !\n", v4l2_ctrl_get_name(qc->id));
     switch (qc->id) {
       //V4L2_CID_BASE
       case V4L2_CID_BRIGHTNESS:
@@ -3530,7 +3529,7 @@ static int vidioc_s_ctrl(struct file *file, void *priv,
   qc.id = ctrl->id;
   ret = vidioc_queryctrl(file, priv, &qc);
 
-  printk("vidioc_queryctrl! ret = %d id = %d val = %d \n",ret, ctrl->id, ctrl->value);
+  //printk("vidioc_queryctrl! ret = %d id = %d val = %d \n",ret, ctrl->id, ctrl->value);
 
   if (ret < 0)
     return ret;
@@ -3905,8 +3904,6 @@ static int vidioc_s_ctrl(struct file *file, void *priv,
      * used after typecasting and all values in the structure were destroyed.
      * Using proper structure here.
      */
-    vfe_warn("v4l2_subdev_call calling ! ctl id : %d val : %d  reg: %p \n", ctrl->id, ctrl->value, ctrl->user_pt);
-    vfe_warn("v4l2_subdev_call  changing the values \n");
     struct v4l2_ctrl new_ctrl;
     new_ctrl.handler = dev->sd;
     new_ctrl.val = ctrl->value;
@@ -3917,7 +3914,6 @@ static int vidioc_s_ctrl(struct file *file, void *priv,
      */
     new_ctrl.reg = (u8)ctrl->user_pt;
     ret = v4l2_subdev_call(dev->sd,core,s_ctrl,&new_ctrl);
-    vfe_warn("v4l2_subdev_call calling ! ret = \n", ret);
     if (ret < 0)
     {
       vfe_warn("v4l2 sub device s_ctrl fail!\n");

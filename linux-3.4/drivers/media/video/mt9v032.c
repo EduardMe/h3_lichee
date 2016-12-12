@@ -280,10 +280,7 @@ static int mt9v032_write(struct i2c_client *client, const u8 reg,
 
 	ret = i2c_smbus_write_word_swapped(client, reg, data);
 
-  //Testing Verify written data
-	//printk("[n] after write read data ret: %d  \n", ret);
-	//mt9v032_read(client, reg);
-	//vfe_muxto_csi();
+  //vfe_muxto_csi();
 	return ret;
 }
 
@@ -677,8 +674,7 @@ static int _mt9v032_s_ctrl(struct v4l2_subdev *sd, struct v4l2_control *ctrl)
  */
 static int mt9v032_s_ctrl(struct v4l2_ctrl *ctrl)
 {
-  printk("[n] mt9v032_s_ctrl id: %d val : %d \n",ctrl->id,ctrl->val);
-	struct mt9v032 *mt9v032 =
+  struct mt9v032 *mt9v032 =
 			container_of(ctrl->handler, struct mt9v032, ctrls);
 	struct i2c_client *client = v4l2_get_subdevdata(&mt9v032->subdev);
 	/*
@@ -686,11 +682,11 @@ static int mt9v032_s_ctrl(struct v4l2_ctrl *ctrl)
 	 * global client data saved at initialization.
 	 */
 
-	printk("overwriting client old client %p actual client %p \n", client, my_client);
+	//printk("overwriting client old client %p actual client %p \n", client, my_client);
 	client = my_client;
 	u16 data;
 
-	printk("[n] mt9v032_s_ctrl mt9v032: %p i2c client  : %p ctrl->handler %p \n",mt9v032, client, ctrl->handler);
+	//printk("[n] mt9v032_s_ctrl mt9v032: %p i2c client  : %p ctrl->handler %p \n",mt9v032, client, ctrl->handler);
 
 
 	switch (ctrl->id) {
