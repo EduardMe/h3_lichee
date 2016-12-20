@@ -3941,6 +3941,8 @@ static int vidioc_s_parm(struct file *file, void *priv,
 	struct vfe_dev *dev = video_drvdata(file);
 	int ret;
 
+  printk("[n] vidioc_s_parm \n ");
+
 	if(parms->parm.capture.capturemode != V4L2_MODE_VIDEO && \
 				parms->parm.capture.capturemode != V4L2_MODE_IMAGE && \
 				parms->parm.capture.capturemode != V4L2_MODE_PREVIEW) {

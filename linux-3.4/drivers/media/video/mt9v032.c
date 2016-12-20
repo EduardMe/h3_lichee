@@ -496,6 +496,45 @@ static int mt9v032_s_stream(struct v4l2_subdev *subdev, int enable)
 	if (ret < 0)
 		return ret;
 
+  //Write values from firmware of usb
+	ret = mt9v032_write(client, 0x0C, 1);
+	if (ret < 0)
+		return ret;
+	ret = mt9v032_write(client, 0x0C, 0);
+	if (ret < 0)
+			return ret;
+  ret = mt9v032_write(client, 0xB5, 1);
+	if (ret < 0)
+			return ret;
+	ret = mt9v032_write(client, 0xB5, 0);
+	if (ret < 0)
+			return ret;
+  ret = mt9v032_write(client, 0x1C, 2);
+	if (ret < 0)
+		return ret;
+
+
+  ret = mt9v032_write(client, 0x31, 31);
+	if (ret < 0)
+		return ret;
+	ret = mt9v032_write(client, 0x32, 26);
+	if (ret < 0)
+			return ret;
+	ret = mt9v032_write(client, 0x33, 18);
+	if (ret < 0)
+			return ret;
+	ret = mt9v032_write(client, 0xAF, 0);
+	if (ret < 0)
+			return ret;
+	ret = mt9v032_write(client, 0x2B, 3);
+	if (ret < 0)
+		return ret;
+  ret = mt9v032_write(client, 0x10, 64);
+	if (ret < 0)
+		return ret;
+
+
+
 	/* Switch to master "normal" mode */
 	return mt9v032_set_chip_control(mt9v032, 0, mode);
 }
@@ -696,7 +735,36 @@ static int mt9v032_s_ctrl(struct v4l2_ctrl *ctrl)
 
   //If this ID is recieved we will use user_ptr data to modify any register value.
 	case V4L2_CID_GAIN:
-    //printk("[n] mt9v032_s_ctrl V4L2_CID_GAIN Modify any register \n");
+    printk("[n] mt9v032_s_ctrl V4L2_CID_GAIN Modify any register \n");
+		if(ctrl->reg == 0x7f)
+		{
+			printk("set test pattern val %d \n",ctrl->val);
+			switch (ctrl->val) {
+			case 0:
+				data = 0;
+				break;
+			case 1:
+				data = MT9V032_TEST_PATTERN_GRAY_VERTICAL
+				     | MT9V032_TEST_PATTERN_ENABLE;
+				break;
+			case 2:
+				data = MT9V032_TEST_PATTERN_GRAY_HORIZONTAL
+				     | MT9V032_TEST_PATTERN_ENABLE;
+				break;
+			case 3:
+				data = MT9V032_TEST_PATTERN_GRAY_DIAGONAL
+				     | MT9V032_TEST_PATTERN_ENABLE;
+				break;
+			default:
+				data = (ctrl->val << MT9V032_TEST_PATTERN_DATA_SHIFT)
+				     | MT9V032_TEST_PATTERN_USE_DATA
+				     | MT9V032_TEST_PATTERN_ENABLE;
+				     //| MT9V032_TEST_PATTERN_FLIP;
+				break;
+			}
+			printk("[n]set test pattern return data %d \n",data);
+			return mt9v032_write(client, ctrl->reg, data);
+		}
 		return mt9v032_write(client, ctrl->reg, ctrl->val);
 
 	case V4L2_CID_EXPOSURE_AUTO:
@@ -1163,18 +1231,18 @@ static int mt9v032_probe(struct i2c_client *client,
 
 	v4l2_ctrl_handler_init(&mt9v032->ctrls, ARRAY_SIZE(mt9v032_ctrls) + 4);
 
-	v4l2_ctrl_new_std(&mt9v032->ctrls, &mt9v032_ctrl_ops,
-			  V4L2_CID_AUTOGAIN, 0, 1, 1, 1);
-	v4l2_ctrl_new_std(&mt9v032->ctrls, &mt9v032_ctrl_ops,
-			  V4L2_CID_GAIN, MT9V032_ANALOG_GAIN_MIN,
-			  MT9V032_ANALOG_GAIN_MAX, 1, MT9V032_ANALOG_GAIN_DEF);
-	v4l2_ctrl_new_std_menu(&mt9v032->ctrls, &mt9v032_ctrl_ops,
-			       V4L2_CID_EXPOSURE_AUTO, V4L2_EXPOSURE_MANUAL, 0,
-			       V4L2_EXPOSURE_AUTO);
-	v4l2_ctrl_new_std(&mt9v032->ctrls, &mt9v032_ctrl_ops,
-			  V4L2_CID_EXPOSURE, MT9V032_TOTAL_SHUTTER_WIDTH_MIN,
-			  MT9V032_TOTAL_SHUTTER_WIDTH_MAX, 1,
-			  MT9V032_TOTAL_SHUTTER_WIDTH_DEF);
+	//v4l2_ctrl_new_std(&mt9v032->ctrls, &mt9v032_ctrl_ops,
+	//		  V4L2_CID_AUTOGAIN, 0, 1, 1, 1);
+	//v4l2_ctrl_new_std(&mt9v032->ctrls, &mt9v032_ctrl_ops,
+	//		  V4L2_CID_GAIN, MT9V032_ANALOG_GAIN_MIN,
+	//		  MT9V032_ANALOG_GAIN_MAX, 1, MT9V032_ANALOG_GAIN_DEF);
+	//v4l2_ctrl_new_std_menu(&mt9v032->ctrls, &mt9v032_ctrl_ops,
+	//		       V4L2_CID_EXPOSURE_AUTO, V4L2_EXPOSURE_MANUAL, 0,
+	//		       V4L2_EXPOSURE_AUTO);
+	//v4l2_ctrl_new_std(&mt9v032->ctrls, &mt9v032_ctrl_ops,
+	//		  V4L2_CID_EXPOSURE, MT9V032_TOTAL_SHUTTER_WIDTH_MIN,
+	//		  MT9V032_TOTAL_SHUTTER_WIDTH_MAX, 1,
+	//		  MT9V032_TOTAL_SHUTTER_WIDTH_DEF);
 	printk("\r\nmt9v032_probe 3\r\n");
 
 	for (i = 0; i < ARRAY_SIZE(mt9v032_ctrls); ++i)
