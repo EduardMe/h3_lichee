@@ -307,6 +307,7 @@ static int mt9v032_set_chip_control(struct mt9v032 *mt9v032, u16 clear, u16 set)
 static int
 mt9v032_update_aec_agc(struct mt9v032 *mt9v032, u16 which, int enable)
 {
+	printk("[n] mt9v032_update_aec_agc \n");
 	struct i2c_client *client = v4l2_get_subdevdata(&mt9v032->subdev);
 	u16 value = mt9v032->aec_agc;
 	int ret;
@@ -543,6 +544,7 @@ static int mt9v032_enum_mbus_code(struct v4l2_subdev *subdev,
 				  struct v4l2_subdev_fh *fh,
 				  struct v4l2_subdev_mbus_code_enum *code)
 {
+	printk("[n] mt9v032_enum_mbus_code \n");
 	if (code->index > 0)
 		return -EINVAL;
 
@@ -554,6 +556,7 @@ static int mt9v032_enum_frame_size(struct v4l2_subdev *subdev,
 				   struct v4l2_subdev_fh *fh,
 				   struct v4l2_subdev_frame_size_enum *fse)
 {
+	printk("[n] mt9v032_enum_frame_size \n");
 	if (fse->index >= 8 || fse->code != V4L2_MBUS_FMT_SGRBG10_1X10)
 		return -EINVAL;
 
@@ -569,6 +572,7 @@ static int mt9v032_get_format(struct v4l2_subdev *subdev,
 			      struct v4l2_subdev_fh *fh,
 			      struct v4l2_subdev_format *format)
 {
+	printk("[n] mt9v032_get_format \n");
 	struct mt9v032 *mt9v032 = to_mt9v032(subdev);
 
 	format->format = *__mt9v032_get_pad_format(mt9v032, fh, format->pad,
@@ -580,6 +584,7 @@ static int mt9v032_set_format(struct v4l2_subdev *subdev,
 			      struct v4l2_subdev_fh *fh,
 			      struct v4l2_subdev_format *format)
 {
+	printk("[n] mt9v032_set_format \n");
 	struct mt9v032 *mt9v032 = to_mt9v032(subdev);
 	struct v4l2_mbus_framefmt *__format;
 	struct v4l2_rect *__crop;
@@ -616,6 +621,7 @@ static int mt9v032_get_crop(struct v4l2_subdev *subdev,
 			    struct v4l2_subdev_fh *fh,
 			    struct v4l2_subdev_crop *crop)
 {
+	printk("[n] mt9v032_get_crop \n");
 	struct mt9v032 *mt9v032 = to_mt9v032(subdev);
 
 	crop->rect = *__mt9v032_get_pad_crop(mt9v032, fh, crop->pad,
@@ -636,6 +642,7 @@ static int mt9v032_set_crop(struct v4l2_subdev *subdev,
 	/* Clamp the crop rectangle boundaries and align them to a non multiple
 	 * of 2 pixels to ensure a GRBG Bayer pattern.
 	 */
+	 /*
 	rect.left = clamp(ALIGN(crop->rect.left + 1, 2) - 1,
 			  MT9V032_COLUMN_START_MIN,
 			  MT9V032_COLUMN_START_MAX);
@@ -648,6 +655,11 @@ static int mt9v032_set_crop(struct v4l2_subdev *subdev,
 	rect.height = clamp(ALIGN(crop->rect.height, 2),
 			    MT9V032_WINDOW_HEIGHT_MIN,
 			    MT9V032_WINDOW_HEIGHT_MAX);
+*/
+rect.left = crop->rect.left;
+rect.top = crop->rect.top;
+rect.width = crop->rect.width;
+rect.height = crop->rect.height;
 
 	rect.width = min(rect.width, MT9V032_PIXEL_ARRAY_WIDTH - rect.left);
 	rect.height = min(rect.height, MT9V032_PIXEL_ARRAY_HEIGHT - rect.top);
@@ -703,6 +715,7 @@ static int mt9v032_set_crop(struct v4l2_subdev *subdev,
 static int mt9v032_s_ctrl(struct v4l2_ctrl *ctrl);
 static int _mt9v032_s_ctrl(struct v4l2_subdev *sd, struct v4l2_control *ctrl)
 {
+	printk("[n] _mt9v032_s_ctrl \n");
 	return mt9v032_s_ctrl(ctrl);
 }
 /*
@@ -713,6 +726,7 @@ static int _mt9v032_s_ctrl(struct v4l2_subdev *sd, struct v4l2_control *ctrl)
  */
 static int mt9v032_s_ctrl(struct v4l2_ctrl *ctrl)
 {
+	printk("[n] mt9v032_s_ctrl \n");
   struct mt9v032 *mt9v032 =
 			container_of(ctrl->handler, struct mt9v032, ctrls);
 	struct i2c_client *client = v4l2_get_subdevdata(&mt9v032->subdev);
@@ -804,7 +818,7 @@ static int mt9v032_s_ctrl(struct v4l2_ctrl *ctrl)
 
 		return mt9v032_write(client, MT9V032_TEST_PATTERN, data);
 	default:
-               printk("[n] mt9v032_s_ctrl default not handles \n");
+               printk("[n] mt9v032_s_ctrl default not handles %d \n",ctrl->id);
 		break;
 	}
 
@@ -983,6 +997,7 @@ static int mt9v032_init(struct v4l2_subdev *sd, u32 val)
 static int mt9v032_g_chip_ident(struct v4l2_subdev *sd,
 		    struct v4l2_dbg_chip_ident *chip)
 {
+	printk("[n] mt9v032_g_chip_ident \n");
 	  struct i2c_client *client = v4l2_get_subdevdata(sd);
 
 	    return v4l2_chip_ident_i2c_client(client, chip, 0x1324, 0);
@@ -991,6 +1006,7 @@ static int mt9v032_g_chip_ident(struct v4l2_subdev *sd,
 
 static int sensor_g_exif(struct v4l2_subdev *sd, struct sensor_exif_attribute *exif)
 {
+	printk("[n] sensor_g_exif \n");
 	int ret = 0;//, gain_val, exp_val;
 
 	exif->fnumber = 220;
@@ -1005,6 +1021,7 @@ static int sensor_g_exif(struct v4l2_subdev *sd, struct sensor_exif_attribute *e
 
 static long mt9v032_ioctl(struct v4l2_subdev *sd, unsigned int cmd, void *arg)
 {
+	printk("[n] mt9v032_ioctl \n");
 	int ret=0;
 	switch(cmd) {
 		case GET_SENSOR_EXIF:
@@ -1019,6 +1036,7 @@ static long mt9v032_ioctl(struct v4l2_subdev *sd, unsigned int cmd, void *arg)
 static int mt9v032_g_mbus_config(struct v4l2_subdev *sd,
            struct v4l2_mbus_config *cfg)
 {
+	printk("[n] mt9v032_g_mbus_config \n");
   cfg->type = V4L2_MBUS_PARALLEL;
   cfg->flags = V4L2_MBUS_MASTER | VREF_POL | HREF_POL | CLK_POL ;
 
@@ -1061,6 +1079,7 @@ static int mt9v032_s_parm(struct v4l2_subdev *sd, struct v4l2_streamparm *parms)
 
 static int mt9v032_g_parm(struct v4l2_subdev *sd, struct v4l2_streamparm *parms)
 {
+	printk("[n] mt9v032_g_parm \n");
 	struct v4l2_captureparm *cp = &parms->parm.capture;
 	//struct sensor_info *info = to_state(sd);
 
@@ -1079,10 +1098,12 @@ static int mt9v032_g_parm(struct v4l2_subdev *sd, struct v4l2_streamparm *parms)
 
 static int mt9v032_s_fmt(struct v4l2_subdev *sd, struct v4l2_mbus_framefmt *fmt)
 {
+	printk("[n] mt9v032_s_fmt \n");
 	return 0;
 }
 static int mt9v032_enum_size(struct v4l2_subdev *sd, struct v4l2_frmsizeenum *fsize)
 {
+	printk("[n] mt9v032_enum_size \n");
   //if(fsize->index > N_WIN_SIZES-1)
   //	return -EINVAL;
 
@@ -1105,7 +1126,7 @@ static int mt9v032_enum_fmt(struct v4l2_subdev *sd, unsigned index,
 static int mt9v032_try_fmt(struct v4l2_subdev *sd,
 		             struct v4l2_mbus_framefmt *fmt)
 {
-
+	printk("[n] mt9v032_try_fmt \n");
   fmt->width = 752;//wsize->width;
   fmt->height = 480;//wsize->height;
   return 0;
@@ -1165,6 +1186,7 @@ static struct device_attribute cci_device_attrs[] = {
 
 static int cci_sys_register(struct cci_driver *drv_data)
 {
+	printk("[n] cci_sys_register \n");
 	int i, ret;
 	drv_data->cci_device = my_cci_device_def;
 	dev_set_name(&drv_data->cci_device, drv_data->name);
@@ -1358,6 +1380,7 @@ static int mt9v032_probe(struct i2c_client *client,
 
 static int mt9v032_remove(struct i2c_client *client)
 {
+	printk("[n] mt9v032_remove\n");
 	struct v4l2_subdev *subdev = i2c_get_clientdata(client);
 	struct mt9v032 *mt9v032 = to_mt9v032(subdev);
 
