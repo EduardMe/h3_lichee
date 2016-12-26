@@ -255,8 +255,8 @@ static struct regval_list sensor_default_regs[] = {
   {0x302c,0x42},//bit[7:6]: output drive capability
             //00: 1x   01: 2x  10: 3x  11: 4x
 
-  {0x4300,0x30},//
-  {0x501f,0x00},//
+  {0x4300,0x60},//RGB565/{0x4300,0x30},//YUV420
+  {0x501f,0x01},//ISPRGB/{0x501f,0x00},//ISPYUV
   {0x4713,0x03},//
   {0x4407,0x04},//
   {0x440e,0x00},//
@@ -2528,30 +2528,79 @@ static struct cfg_array sensor_ev[] = {
  */
 
 
-static struct regval_list sensor_fmt_yuv422_yuyv[] = {  
+static struct regval_list sensor_fmt_yuv422_yuyv[] = {
   {0x4300,0x30},  //YUYV
+  {0x501f,0x00},
   //{REG_TERM,VAL_TERM},
 };
 
 static struct regval_list sensor_fmt_yuv422_yvyu[] = {
   {0x4300,0x31},  //YVYU
+  {0x501f,0x00},
   //{REG_TERM,VAL_TERM},
 };
 
 static struct regval_list sensor_fmt_yuv422_vyuy[] = {
   {0x4300,0x33},  //VYUY
+  {0x501f,0x00},
   //{REG_TERM,VAL_TERM},
 };
 
 static struct regval_list sensor_fmt_yuv422_uyvy[] = {
   {0x4300,0x32},  //UYVY
+  {0x501f,0x00},
   //{REG_TERM,VAL_TERM},
 };
 
 //static struct regval_list sensor_fmt_raw[] = {
-//  
+//
 //};
 
+static struct regval_list sensor_fmt_rgb565_bggr[] = {
+  {0x4300,0x60},  //RGB565
+  {0x501f,0x01},
+  //{REG_TERM,VAL_TERM},
+};
+
+static struct regval_list sensor_fmt_rgb565_rggb[] = {
+  {0x4300,0x61},  //RGB565
+  {0x501f,0x01},
+  //{REG_TERM,VAL_TERM},
+};
+
+static struct regval_list sensor_fmt_rgb565_grrb[] = {
+  {0x4300,0x62},  //RGB565
+  {0x501f,0x01},
+  //{REG_TERM,VAL_TERM},
+};
+
+static struct regval_list sensor_fmt_rgb565_brrg[] = {
+  {0x4300,0x63},  //RGB565
+  {0x501f,0x01},
+  //{REG_TERM,VAL_TERM},
+};
+
+static struct regval_list sensor_fmt_rgb565_gbbr[] = {
+  {0x4300,0x64},  //RGB565
+  {0x501f,0x01},
+  //{REG_TERM,VAL_TERM},
+};
+
+static struct regval_list sensor_fmt_rgb565_rbbg[] = {
+  {0x4300,0x65},  //RGB565
+  {0x501f,0x01}, //ISP CONTROL RGB
+  //{REG_TERM,VAL_TERM},
+};
+
+static struct regval_list sensor_fmt_jpeg[] =
+{
+  {0x4300,0x32},//OUTPUT FORMAT CONTROL UVYV
+  {0x501f,0x00},//ISP CONTROL IYUV
+  {0x4713,0x02},//JPEG MODE SELECT
+  {0x4407,0x04},//JPEG QUALITY
+  {0x440e,0x00},//JPEG QUALITY
+  //{REG_TERM,VAL_TERM},
+};
 static struct regval_list ae_average_tbl[] = {
   /* Whole Image Average */
 	{0x5688, 0x11}, /* Zone 1/Zone 0 weight */
@@ -4374,6 +4423,58 @@ static struct sensor_format_struct {
     .regs_size = ARRAY_SIZE(sensor_fmt_yuv422_vyuy),
     .bpp    = 2,
   },
+  {
+    .desc   = "RGB565, le",
+    .mbus_code  = V4L2_MBUS_FMT_RGB565_2X8_LE,
+    .regs     = sensor_fmt_rgb565_rggb,
+    .regs_size = ARRAY_SIZE(sensor_fmt_rgb565_rggb),
+    .bpp    = 2,
+  },
+#if 0
+//commented to experiment with rgb565 formats
+  {
+    .desc   = "RGGB 5:6:5",
+    .mbus_code  = V4L2_MBUS_FMT_RGB565_2X8_LE,
+    .regs     = sensor_fmt_rgb565_rggb,
+    .regs_size = ARRAY_SIZE(sensor_fmt_rgb565_rggb),
+    .bpp    = 2,
+  },
+  {
+    .desc   = "GRRB 5:6:5",
+    .mbus_code  = V4L2_MBUS_FMT_RGB565_2X8_LE,
+    .regs     = sensor_fmt_rgb565_grrb,
+    .regs_size = ARRAY_SIZE(sensor_fmt_rgb565_grrb),
+    .bpp    = 2,
+  },
+  {
+    .desc   = "BRRG 5:6:5",
+    .mbus_code  = V4L2_MBUS_FMT_RGB565_2X8_LE,
+    .regs     = sensor_fmt_rgb565_brrg,
+    .regs_size = ARRAY_SIZE(sensor_fmt_rgb565_brrg),
+    .bpp    = 2,
+  },
+  {
+    .desc   = "GBBR 5:6:5",
+    .mbus_code  = V4L2_MBUS_FMT_RGB565_2X8_LE,
+    .regs     = sensor_fmt_rgb565_gbbr,
+    .regs_size = ARRAY_SIZE(sensor_fmt_rgb565_gbbr),
+    .bpp    = 2,
+  },
+  {
+    .desc   = "RBBG 5:6:5",
+    .mbus_code  = V4L2_MBUS_FMT_RGB565_2X8_LE,
+    .regs     = sensor_fmt_rgb565_rbbg,
+    .regs_size = ARRAY_SIZE(sensor_fmt_rgb565_rbbg),
+    .bpp    = 2,
+  },
+  {
+    .desc   = "JPEG",
+    .mbus_code  = V4L2_MBUS_FMT_JPEG_1X8,
+    .regs     = sensor_fmt_jpeg,
+    .regs_size = ARRAY_SIZE(sensor_fmt_jpeg),
+    .bpp    = 1,
+  },
+#endif
 //  {
 //    .desc   = "Raw RGB Bayer",
 //    .mbus_code  = V4L2_MBUS_FMT_SBGGR8_1X8,
